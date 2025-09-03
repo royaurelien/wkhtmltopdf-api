@@ -194,11 +194,15 @@ def main(args: list = []) -> None:
         _logger.error("No files provided.")
         sys.exit("No files provided.")
 
+    for key in ["header-html", "footer-html"]:
+        if value := parsed_args["dict_args"].get(key):
+            parsed_args["dict_args"][key] = os.path.basename(value)
+
     data = {
         "args": str(parsed_args["dict_args"]),
         # "values": list(parsed_args["dict_args"].values()),
-        "header": header_path,
-        "footer": footer_path,
+        "header": os.path.basename(header_path),
+        "footer": os.path.basename(footer_path),
         "output": guess_output(paths),
         "clean": False,
     }
