@@ -18,7 +18,7 @@ LIMIT_SIZE = 100000000
 LOG_FILEPATH = os.path.join(os.path.expanduser("~"), "wkhtmltopdf.log")
 REPORT_API_URL = os.getenv("REPORT_API_URL")
 
-SESSION_PATTERN = r"session_id=([a-z0-9]*)"
+SESSION_PATTERN = r"session_id=([^;]+)"
 
 handler = FileHandler(LOG_FILEPATH)
 
@@ -104,6 +104,7 @@ def parse_args(input_args: List) -> dict:
         with open(cookie_jar, encoding="utf-8") as file:
             cookie = re.search(SESSION_PATTERN, file.read().strip()).group(0).split("=")
             dict_args["cookie"] = cookie
+            # TODO: make cookies
 
     vals.update(
         {
@@ -177,6 +178,8 @@ def main(args: list = []) -> None:
     footer_path = parsed_args["dict_args"].get("footer-html", "")
     paths = parsed_args.get("bodies", [])
 
+    _logger.debug(parsed_args)
+
     if header_path:
         paths.append(header_path)
 
@@ -192,12 +195,16 @@ def main(args: list = []) -> None:
         sys.exit("No files provided.")
 
     data = {
-        "args": parsed_args["dict_args"],
+        "args": str(parsed_args["dict_args"]),
+        # "values": list(parsed_args["dict_args"].values()),
         "header": header_path,
         "footer": footer_path,
         "output": guess_output(paths),
         "clean": False,
     }
+
+    _logger.warning(data)
+    _logger.warning(f"Args {type(data['args'])}: {data['args']}")
 
     url = REPORT_API_URL
     url += "/pdf"
